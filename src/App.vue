@@ -1,41 +1,61 @@
 <template>
-    <div v-if="modalState" class="black-bg">
-        <div class="white-bg">
-            <h4>상세페이지</h4>
-            <p>내용</p>
-            <button @click="modalState = false">닫기</button>
-        </div>
-    </div>
+    <Transition name="fade">
+        <CommonModal
+            :rooms="rooms"
+            :selectedId="selectedId"
+            :modalState="modalState"
+            @closeModal="closeModal"
+        />
+    </Transition>
 
     <div class="menu">
         <a v-for="menu in menus" :key="menu" href="#">{{ menu }}</a>
     </div>
 
-    <div v-for="(product, i) in products" :key="i">
-        <img :src="product.image" class="room-img" />
-        <h4 @click="modalState = true">{{ product.title }}</h4>
-        <p>월 {{ product.price.toLocaleString() }} 원</p>
-        <button @click="product.count++">허위매물 신고</button>
-        <span>신고수 : {{ product.count }}</span>
-    </div>
+    <DiscountBanner />
+
+    <RoomCard
+        v-for="(room, i) in rooms"
+        @openModal="openModal($event)"
+        @report="report(i)"
+        :key="i"
+        :room="room"
+    />
 </template>
 
 <script>
 import data from './assets/room';
+import DiscountBanner from './components/DiscountBanner.vue';
+import CommonModal from './components/CommonModal.vue';
+import RoomCard from './components/RoomCard.vue';
 
 export default {
     name: 'App',
     data() {
         return {
-            modalState: false,
             menus: ['Home', 'Shop', 'About'],
-            products: data,
+            rooms: data,
+            modalState: false,
+            selectedId: 0,
         };
     },
     methods: {
-        increase() {},
+        openModal(id) {
+            this.selectedId = id;
+            this.modalState = true;
+        },
+        closeModal() {
+            this.modalState = false;
+        },
+        report(id) {
+            this.rooms[id].count++;
+        },
     },
-    components: {},
+    components: {
+        DiscountBanner,
+        CommonModal,
+        RoomCard,
+    },
 };
 </script>
 
@@ -86,5 +106,32 @@ div {
     background-color: white;
     border-radius: 8px;
     padding: 20px;
+}
+
+.discount {
+    background-color: #eee;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 5px;
+}
+
+.fade-enter-from {
+    transform: translateY(-1000px);
+}
+.fade-enter-active {
+    transition: all 0.5s;
+}
+.fade-enter-to {
+    transform: translateY(0px);
+}
+
+.fade-leave-from {
+    opacity: 1;
+}
+.fade-leave-active {
+    transition: all 1s;
+}
+.fade-leave-to {
+    opacity: 0;
 }
 </style>
